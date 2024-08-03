@@ -1,4 +1,4 @@
-import { Universe, Cell } from "wasm-physics/wasm_physics";
+import { Universe, Cell, init_webgl } from "wasm-physics/wasm_physics";
 import { memory } from "wasm-physics/wasm_physics_bg.wasm";
 
 const CELL_SIZE = 5; // px
@@ -66,6 +66,10 @@ const drawCells = (
 };
 
 export const initGame = (canvas: HTMLCanvasElement) => {
+  init_webgl(canvas);
+}
+
+export const initGameOfLife = (canvas: HTMLCanvasElement) => {
   const universe = Universe.new(64, 64);
   const width = universe.width();
   const height = universe.height();

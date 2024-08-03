@@ -1,6 +1,10 @@
 mod utils;
+mod webgl;
 
 use wasm_bindgen::prelude::*;
+use web_sys::HtmlCanvasElement;
+
+////////////////////////////////////////////////////////////////////////////////
 
 #[wasm_bindgen]
 extern "C" {
@@ -27,6 +31,11 @@ macro_rules! console_log {
 #[wasm_bindgen]
 pub fn greet() {
   console_log!("Hello, wasm-physics!  Foo");
+}
+
+#[wasm_bindgen]
+pub fn init_webgl(canvas: HtmlCanvasElement) {
+  let _ = webgl::core::init_webgl(canvas);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
