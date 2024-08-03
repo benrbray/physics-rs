@@ -1,0 +1,34 @@
+{
+  "name": "physics",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "exports": {
+    ".": "./dist/physics.js"
+  },
+  "types": "./dist/physics.d.ts",
+  "files": [
+    "dist",
+    "lib"
+  ],
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "wasm-physics": "../physics-rs/pkg"
+  },
+  "peerDependencies": {
+    "solid-js": "^1.8.18"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.2",
+    "typescript": "^5.4.2",
+    "vite": "^5.3.4",
+    "vite-plugin-dts": "^3.9.1",
+    "vite-plugin-solid": "^2.10.2",
+    "vite-plugin-wasm": "^3.3.0",
+    "vite-tsconfig-paths": "^4.3.2"
+  }
+}
