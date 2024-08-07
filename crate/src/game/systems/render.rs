@@ -1,15 +1,17 @@
+use std::rc::Rc;
+
 use specs::prelude::*;
 use glow::HasContext;
 use crate::game::components;
 
-pub struct RenderSystem<'a> {
-  gl:  &'a glow::Context,
+pub struct RenderSystem {
+  gl:  Rc<glow::Context>,
   vbo: glow::Buffer,
   ebo: glow::Buffer,
   vao: glow::VertexArray,
 }
 
-impl<'a> Drop for RenderSystem<'a> {
+impl Drop for RenderSystem {
   fn drop(&mut self) {
     unsafe {
       self.gl.delete_vertex_array(self.vao);
@@ -25,10 +27,10 @@ pub struct RenderSystemData<'a> {
   position: ReadStorage<'a, components::Position>
 }
 
-impl<'a> RenderSystem<'a> {
+impl RenderSystem {
   pub fn build(
-    gl: &'a glow::Context,
-  ) -> RenderSystem<'a> {
+    gl: Rc<glow::Context>,
+  ) -> RenderSystem {
     // vertex buffer object
     let vbo;
     unsafe {
@@ -62,7 +64,7 @@ impl<'a> RenderSystem<'a> {
   }
 }
 
-impl<'a, 'b> System<'b> for RenderSystem<'a> {
+impl<'b> System<'b> for RenderSystem {
   type SystemData = RenderSystemData<'b>;
 
   // plan:

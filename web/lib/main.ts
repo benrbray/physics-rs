@@ -5,7 +5,6 @@ let game: WebClient|null = null;
 
 export const initGame = (canvas: HTMLCanvasElement) => {
   game = new WebClient(canvas);
-  game.start();
 
   const loop = () => {
     game!.tick();

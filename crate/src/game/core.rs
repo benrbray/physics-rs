@@ -2,7 +2,9 @@ use std::rc::Rc;
 
 use glow::Context;
 use specs::prelude::*;
+use web_sys::HtmlCanvasElement;
 
+use crate::canvas;
 use crate::game::components;
 use crate::geom;
 use super::systems::time::{PrintTimeSystem,Time};
@@ -11,6 +13,7 @@ use super::systems::render::RenderSystem;
 ////////////////////////////////////////////////////////////////////////////////
 
 pub struct Game<'a> {
+  gl: Rc<Context>,
   world: World,
   update_dispatcher: Dispatcher<'a, 'a>,
   render_dispatcher: Dispatcher<'a, 'a>
@@ -18,7 +21,8 @@ pub struct Game<'a> {
 
 impl<'a> Game<'a> {
   pub fn new(
-    gl: Rc<Context>
+    canvas: HtmlCanvasElement
+    // gl: &'a Context
   ) -> Game<'a> {
     
     /* ---- update dispatcher ---- */
@@ -30,9 +34,11 @@ impl<'a> Game<'a> {
 
     /* ---- render dispatcher ---- */
 
-    let render_system = RenderSystem::build(&gl);
+    let ctx = canvas::create_webgl_context(canvas).unwrap();
+    let gl = Rc::new(glow::Context::from_webgl2_context(ctx));
+    let render_system = RenderSystem::build(Rc::clone(&gl));
     
-    let render_dispatcher = {
+    let mut render_dispatcher = {
       let render_builder = DispatcherBuilder::new();
       
       render_builder
@@ -44,19 +50,21 @@ impl<'a> Game<'a> {
     // set up world
     let mut world = World::new();
     update_dispatcher.setup(&mut world);
+    render_dispatcher.setup(&mut world);
 
     world.insert(Time(0.0));
     
 
-    let mut game = Game {
+    Game {
+      gl,
       world,
       update_dispatcher,
       render_dispatcher
-    };
+    }
 
-    game.create_scene1();
+    // game.create_scene1();
 
-    game
+    // game
   }
 
   pub fn tick(&mut self) {
