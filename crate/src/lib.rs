@@ -2,35 +2,13 @@ mod utils;
 mod webgl;
 mod game;
 mod canvas;
+mod console;
 
+use console::*;
 use game::*;
 use wasm_bindgen::prelude::*;
 use web_sys::{HtmlCanvasElement, WebGl2RenderingContext};
-use std::rc::Rc;
-
-////////////////////////////////////////////////////////////////////////////////
-
-#[wasm_bindgen]
-extern "C" {
-  #[wasm_bindgen(js_namespace = console)]
-  fn log(s: &str);
-
-  // The `console.log` is quite polymorphic, so we can bind it with multiple
-  // signatures. Note that we need to use `js_name` to ensure we always call
-  // `log` in JS.
-  #[wasm_bindgen(js_namespace = console, js_name = log)]
-  fn log_u32(a: u32);
-
-  // Multiple arguments too!
-  #[wasm_bindgen(js_namespace = console, js_name = log)]
-  fn log_many(a: &str, b: &str);
-}
-
-macro_rules! console_log {
-  // Note that this is using the `log` function imported above during
-  // `bare_bones`
-  ($($t:tt)*) => (log(&format_args!($($t)*).to_string()))
-}
+use std::{cell::RefCell, rc::Rc};
 
 #[wasm_bindgen]
 pub fn greet() {
@@ -42,7 +20,7 @@ pub fn greet() {
 // used to control the application from JavaScript
 #[wasm_bindgen]
 pub struct WebClient {
-  game: Rc<Game>,
+  game: RefCell<Game>,
   gl: Rc<WebGl2RenderingContext>
 }
 #[wasm_bindgen]
@@ -54,7 +32,7 @@ impl WebClient {
   ) -> WebClient {
     utils::set_panic_hook();
 
-    let game = Rc::new(Game::new());
+    let game = RefCell::new(Game::new());
     let gl = Rc::new(canvas::create_webgl_context(canvas).unwrap());
 
     WebClient { game, gl }
@@ -68,7 +46,7 @@ impl WebClient {
 
   #[wasm_bindgen]
   pub fn tick(&self) -> Result<(), JsValue> {
-    console_log!("tick");
+    self.game.borrow_mut().tick();
     Ok(())
   }
 }
