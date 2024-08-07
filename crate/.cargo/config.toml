@@ -1,0 +1,6 @@
+# https://github.com/RReverser/wasm-bindgen-rayon?tab=readme-ov-file#using-config-files
+[target.wasm32-unknown-unknown]
+rustflags = ["-C", "target-feature=+atomics,+bulk-memory,+mutable-globals"]
+
+[unstable]
+build-std = ["panic_abort", "std"]

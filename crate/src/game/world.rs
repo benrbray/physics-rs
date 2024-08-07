@@ -1,6 +1,4 @@
 use specs::prelude::*;
-use wasm_bindgen::prelude::*;
-use serde::{Serialize, Deserialize};
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -52,14 +50,6 @@ impl<'a> Game<'a> {
 pub struct GameWasm {
   game: Game<'static>
 }
-
-
-// #[wasm_bindgen]
-// impl GameWasm {
-//     pub fn to_js(&self) -> JsValue {
-//         JsValue::from_serde(&self.game).unwrap()
-//     }
-// }
 
 pub fn build_game() -> Result<GameWasm, ()> {
   let game = Game::build().unwrap();

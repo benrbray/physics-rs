@@ -4,7 +4,11 @@ import { render } from 'solid-js/web'
 import './index.css'
 
 import { Demo } from './Demo'
+import { initializeWasm } from '@lib/main';
 
-const root = document.getElementById('root')
+////////////////////////////////////////////////////////////////////////////////
 
-render(() => <Demo />, root!)
+await initializeWasm();
+
+const root = document.getElementById('root');
+render(() => <Demo />, root!);

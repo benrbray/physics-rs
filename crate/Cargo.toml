@@ -12,11 +12,21 @@ default = ["console_error_panic_hook"]
 
 [dependencies]
 wasm-bindgen = "0.2.84"
+rayon = "1.8"
+wasm-bindgen-rayon = "1.2"
 js-sys = "0.3.69"
-specs = { version = "0.20.0", features = ["shred-derive"] }
 specs-derive = "*"
 serde = { version = "1.0", features = ["derive"] }
 serde-wasm-bindgen = "0.4"
+
+# shred does not yet work in wasm, so we must
+# disable the "parallel" feature of specs
+# (see https://github.com/slide-rs/specs/pull/495)
+# TODO (Ben @ 2024/08/05) reenable when not targeting wasm
+[dependencies.specs]
+version = "0.20.0"
+default-features = false
+features = ["shred-derive"]
 
 # The `console_error_panic_hook` crate provides better debugging of panics by
 # logging them with `console.error`. This is great for development, but requires

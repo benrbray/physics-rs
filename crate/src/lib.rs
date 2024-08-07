@@ -7,6 +7,10 @@ use wasm_bindgen::prelude::*;
 use web_sys::HtmlCanvasElement;
 use std::process;
 
+
+// expose an async initThreadPool function in the final generated JavaScript for your library.
+pub use wasm_bindgen_rayon::init_thread_pool;
+
 ////////////////////////////////////////////////////////////////////////////////
 
 #[wasm_bindgen]
@@ -33,20 +37,28 @@ macro_rules! console_log {
 
 #[wasm_bindgen]
 pub fn greet() {
-  console_log!("Hello, wasm-physics!  Foo");
+  console_log!("Hello, wasm-physics!");
 }
+
+////////////////////////////////////////////////////////////////////////////////
 
 // static mut GAME: Option<Game> = None;
 
 #[wasm_bindgen]
 pub fn init_game(canvas: HtmlCanvasElement) {
+  // better wasm error messages
+  utils::set_panic_hook();
+
+  console_log!("init_game");
+
   let _ = webgl::core::init_webgl(canvas);
 
-    // game
-  let game = Game::build().unwrap_or_else(|_err| {
-    eprintln!("failed to initialize game!");
-    process::exit(1);
-  });
+  // game
+  let game = Game::build();
+  // .unwrap_or_else(|_err| {
+  //   eprintln!("failed to initialize game!");
+  //   process::exit(1);
+  // });
   
   // TODO: avoid unsafe mutable static
   // unsafe {

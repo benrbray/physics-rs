@@ -12,7 +12,7 @@ importers:
         specifier: ^1.8.18
         version: 1.8.19
       wasm-physics:
-        specifier: ../crate/pkg
+        specifier: link:../crate/pkg
         version: link:../crate/pkg
     devDependencies:
       '@types/node':
@@ -24,6 +24,9 @@ importers:
       vite:
         specifier: ^5.3.4
         version: 5.3.5(@types/node@22.0.2)
+      vite-plugin-cross-origin-isolation:
+        specifier: ^0.1.6
+        version: 0.1.6
       vite-plugin-dts:
         specifier: ^3.9.1
         version: 3.9.1(@types/node@22.0.2)(rollup@4.19.2)(typescript@5.5.4)(vite@5.3.5(@types/node@22.0.2))
@@ -827,6 +830,9 @@ packages:
   validator@13.12.0:
     resolution: {integrity: sha512-c1Q0mCiPlgdTVVVIJIrBuxNicYE+t/7oKeI9MWLj3fh/uq2Pxh/3eeWbVZ4OcGW1TUf53At0njHw5SMdA3tmMg==}
     engines: {node: '>= 0.10'}
+
+  vite-plugin-cross-origin-isolation@0.1.6:
+    resolution: {integrity: sha512-OY0naW9nPUDrKTffYnY7FRYXOgZdHoNwMGpPxUmj/n32mGZi01fcq+J536jkmwGWX7DLT95XBQVHHbrAJzTvrw==}
 
   vite-plugin-dts@3.9.1:
     resolution: {integrity: sha512-rVp2KM9Ue22NGWB8dNtWEr+KekN3rIgz1tWD050QnRGlriUCmaDwa7qA5zDEjbXg5lAXhYMSBJtx3q3hQIJZSg==}
@@ -1663,6 +1669,8 @@ snapshots:
   validate-html-nesting@1.2.2: {}
 
   validator@13.12.0: {}
+
+  vite-plugin-cross-origin-isolation@0.1.6: {}
 
   vite-plugin-dts@3.9.1(@types/node@22.0.2)(rollup@4.19.2)(typescript@5.5.4)(vite@5.3.5(@types/node@22.0.2)):
     dependencies:
