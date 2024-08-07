@@ -1,7 +1,5 @@
-pub mod world;
 mod core;
-mod state;
-mod store;
+mod components;
 mod systems;
 
 pub use crate::game::core::*;

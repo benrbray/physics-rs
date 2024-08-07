@@ -1,11 +1,13 @@
 mod utils;
 mod webgl;
 mod game;
+mod geom;
 mod canvas;
 mod console;
 
 use console::*;
 use game::*;
+use glow::Context;
 use wasm_bindgen::prelude::*;
 use web_sys::{HtmlCanvasElement, WebGl2RenderingContext};
 use std::{cell::RefCell, rc::Rc};
@@ -17,12 +19,15 @@ pub fn greet() {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-// used to control the application from JavaScript
+/// Used to control the application from JavaScript
+#[cfg(target_arch = "wasm32")]
 #[wasm_bindgen]
 pub struct WebClient {
-  game: RefCell<Game>,
-  gl: Rc<WebGl2RenderingContext>
+  game: RefCell<Game<'static>>,
+  gl: Rc<Context>
 }
+
+#[cfg(target_arch = "wasm32")]
 #[wasm_bindgen]
 impl WebClient {
   /// Initialize the WebClient.
@@ -32,56 +37,24 @@ impl WebClient {
   ) -> WebClient {
     utils::set_panic_hook();
 
-    let game = RefCell::new(Game::new());
-    let gl = Rc::new(canvas::create_webgl_context(canvas).unwrap());
+    let ctx = canvas::create_webgl_context(canvas).unwrap();
 
-    WebClient { game, gl }
+    /* ---- wasm ---- */
+    let gl = glow::Context::from_webgl2_context(ctx);
+
+    let gl_ref = Rc::new(gl);
+    let game = RefCell::new(Game::new(Rc::clone(&gl_ref)));
+
+    WebClient {
+      gl: gl_ref,
+      game
+    }
   }
 
-  /// Start simulation and rendering.
-  #[wasm_bindgen]
-  pub fn start(&self) -> Result<(), JsValue> {
-    Ok(())
-  }
-
+  /// Perform one step of simulation.
   #[wasm_bindgen]
   pub fn tick(&self) -> Result<(), JsValue> {
     self.game.borrow_mut().tick();
     Ok(())
   }
 }
-
-////////////////////////////////////////////////////////////////////////////////
-
-// static mut GAME: Option<Game> = None;
-
-// #[wasm_bindgen]
-// pub fn init_game(canvas: HtmlCanvasElement) {
-//   // better wasm error messages
-//   utils::set_panic_hook();
-
-//   console_log!("init_game");
-
-//   let _ = WebClient::new(canvas);
-
-//   // let _ = webgl::core::init_webgl(canvas);
-
-//   // game
-//   // let game = Game::build();
-//   // .unwrap_or_else(|_err| {
-//   //   eprintln!("failed to initialize game!");
-//   //   process::exit(1);
-//   // });
-  
-//   // TODO: avoid unsafe mutable static
-//   // unsafe {
-//   //   GAME = Some(game::world::init_game().unwrap());
-//   // }
-// }
-
-// #[wasm_bindgen]
-// pub fn tick() {
-//   console_log!("tick!");
-//   // let game = unsafe { GAME.as_mut().unwrap() };
-//   // game.tick();
-// }
