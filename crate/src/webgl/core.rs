@@ -19,7 +19,6 @@ pub fn init_webgl(canvas: HtmlCanvasElement) -> Result<(), JsValue> {
       in vec4 position;
 
       void main() {
-      
           gl_Position = position;
       }
       "##,

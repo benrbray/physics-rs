@@ -57,3 +57,4 @@ opt-level = "s"
 
 [lints.clippy]
 needless_return = "allow"
+new_without_default = "allow"

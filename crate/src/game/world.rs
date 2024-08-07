@@ -58,14 +58,14 @@ pub fn build_game() -> Result<GameWasm, ()> {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-// impl<'a> Game<'a> {
-//   pub fn tick(&mut self) {
-// 		{
-// 			let mut sim_time = self.world.write_resource::<Time>();
-// 			*sim_time = Time(sim_time.0 + 1.0);
-// 		}
+impl<'a> Game<'a> {
+  pub fn tick(&mut self) {
+		{
+			let mut sim_time = self.world.write_resource::<Time>();
+			*sim_time = Time(sim_time.0 + 1.0);
+		}
 
-//     self.update_dispatcher.dispatch(&self.world);
-//     self.world.maintain();
-//   }
-// }
+    self.update_dispatcher.dispatch(&self.world);
+    self.world.maintain();
+  }
+}
