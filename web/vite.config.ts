@@ -30,27 +30,27 @@ export default defineConfig({
       // dependencies will be installed by the consumer,
       // so tell rollup not to bundle them with the package
       external: [
-        // "wasm-physics/wasm_physics",
-        // "wasm-physics/wasm_physics_bg.wasm",
-        // ...Object.keys(pkg["dependencies"]     || {}),
+        "wasm-physics/wasm_physics",
+        "wasm-physics/wasm_physics_bg.wasm",
+        ...Object.keys(pkg["dependencies"]     || {}),
         ...Object.keys(pkg["peerDependencies"] || {}),
         ...Object.keys(pkg["devDependencies"]  || {}),
       ],
     },
   },
-  server: {
-    headers: {
-      // required for `SharedArrayBuffer`
-      "Cross-Origin-Embedder-Policy": "require-corp",
-      "Cross-Origin-Opener-Policy": "same-origin",
-    },
-    fs: {
-      allow: [
-        // preserve default server behavior
-        searchForWorkspaceRoot(process.cwd()),
-        // allow exports from crate/pkg
-        '..',
-      ]
-    }
-  }
+  // server: {
+  //   headers: {
+  //     // required for `SharedArrayBuffer`
+  //     "Cross-Origin-Embedder-Policy": "require-corp",
+  //     "Cross-Origin-Opener-Policy": "same-origin",
+  //   },
+  //   fs: {
+  //     allow: [
+  //       // preserve default server behavior
+  //       searchForWorkspaceRoot(process.cwd()),
+  //       // allow exports from crate/pkg
+  //       '..',
+  //     ]
+  //   }
+  // }
 })

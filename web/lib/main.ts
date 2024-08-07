@@ -1,24 +1,5 @@
-import init, { initThreadPool, init_game } from "wasm-physics/wasm_physics";
-
+import { init_game } from "wasm-physics/wasm_physics";
 // import { memory } from "wasm-physics/wasm_physics_bg.wasm";
-
-let isInitialized = false;
-
-export const initializeWasm = async () => {
-  if(isInitialized) { return; }
-
-  // to support wasm-bindgen-rayon, we are using wasm-pack with `--target web`,
-  // which requires us to manually initialize the WebAssembly instance.
-  await init();
-
-  // Thread pool initialization with the given number of threads
-  // (pass `navigator.hardwareConcurrency` if you want to use all cores).
-  await initThreadPool(navigator.hardwareConcurrency);
-
-  // once the WASM module has been instantiated, we
-  // can call other imported WASM functions as usual
-  isInitialized = true;
-}
 
 export const initGame = (canvas: HTMLCanvasElement) => {
   init_game(canvas);

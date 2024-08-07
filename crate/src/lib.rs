@@ -5,11 +5,7 @@ mod game;
 use game::world::*;
 use wasm_bindgen::prelude::*;
 use web_sys::HtmlCanvasElement;
-use std::process;
-
-
-// expose an async initThreadPool function in the final generated JavaScript for your library.
-pub use wasm_bindgen_rayon::init_thread_pool;
+// use std::process;
 
 ////////////////////////////////////////////////////////////////////////////////
 

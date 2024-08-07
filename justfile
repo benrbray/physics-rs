@@ -1,5 +1,5 @@
 build-crate:
-  cd crate && wasm-pack build --target web
+  cd crate && wasm-pack build
 
 build-web:
   cd web && pnpm run build
@@ -7,7 +7,7 @@ build-web:
 build: build-crate build-web
 
 debug:
-  cd crate && wasm-pack build --target web --debug
+  cd crate && wasm-pack build --debug
 
 dev-web:
   cd web && pnpm run dev
