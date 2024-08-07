@@ -12,8 +12,8 @@ importers:
         specifier: ^1.8.18
         version: 1.8.19
       wasm-physics:
-        specifier: ../physics-rs/pkg
-        version: link:../physics-rs/pkg
+        specifier: ../crate/pkg
+        version: link:../crate/pkg
     devDependencies:
       '@types/node':
         specifier: ^22.0.2

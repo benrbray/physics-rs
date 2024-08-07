@@ -17,7 +17,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "wasm-physics": "../physics-rs/pkg"
+    "wasm-physics": "../crate/pkg"
   },
   "peerDependencies": {
     "solid-js": "^1.8.18"

@@ -1,10 +1,10 @@
-build-wasm:
-  cd physics-rs && wasm-pack build
+build-crate:
+  cd crate && wasm-pack build
 
 build-web:
-  cd physics-web && pnpm run build
+  cd web && pnpm run build
 
-build: build-wasm build-web
+build: build-crate build-web
 
 debug:
-  cd physics-rs && wasm-pack build --debug
+  cd crate && wasm-pack build --debug
