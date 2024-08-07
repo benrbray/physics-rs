@@ -7,10 +7,11 @@ export const initGame = (canvas: HTMLCanvasElement) => {
   game = new WebClient(canvas);
   game.start();
 
-  // const loop = () => {
-  //   requestAnimationFrame(loop);
-  // }
+  const loop = () => {
+    game!.tick();
+    requestAnimationFrame(loop);
+  }
 
-
+  loop();
 }
 

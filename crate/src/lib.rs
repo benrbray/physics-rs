@@ -65,6 +65,12 @@ impl WebClient {
   pub fn start(&self) -> Result<(), JsValue> {
     Ok(())
   }
+
+  #[wasm_bindgen]
+  pub fn tick(&self) -> Result<(), JsValue> {
+    console_log!("tick");
+    Ok(())
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////

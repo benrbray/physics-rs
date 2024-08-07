@@ -1,5 +1,7 @@
-pub struct Game {
+use specs::prelude::*;
 
+pub struct Game {
+  
 }
 
 impl Game {
