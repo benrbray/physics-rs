@@ -13,5 +13,5 @@ void main() {
   // float g = abs(2 * fract(f_position.y) - 1.0);
   // color = vec4(u_color.r, g, 1.0, 1.0);
 
-  color = vec4(0.4f, 0.45f, 0.5f, 0.4f);
+  color = vec4(0.2f, 0.25f, 0.3f, 0.4f);
 }

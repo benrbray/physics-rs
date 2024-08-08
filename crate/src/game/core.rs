@@ -3,6 +3,7 @@ use std::rc::Rc;
 use glow::{Context, HasContext};
 use specs::prelude::*;
 use web_sys::HtmlCanvasElement;
+use rand::prelude::*;
 
 use crate::canvas;
 use crate::game::components;
@@ -10,6 +11,7 @@ use crate::geom;
 use crate::graphics::shader::Shader;
 use super::systems::time::{PrintTimeSystem,Time};
 use super::systems::render::RenderSystem;
+use super::systems::physics::PhysicsSystem;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -26,12 +28,16 @@ impl<'a> Game<'a> {
     canvas: HtmlCanvasElement
     // gl: &'a Context
   ) -> Game<'a> {
+
+    canvas.set_width(600);
+    canvas.set_height(600);
     
     /* ---- update dispatcher ---- */
 
     let update_builder = DispatcherBuilder::new();
     let mut update_dispatcher = update_builder
-      .with(PrintTimeSystem, "print_time", &[])
+      // .with(PrintTimeSystem, "print_time", &[])
+	    .with(PhysicsSystem::build(), "physics", &[])
       .build();
 
     /* ---- render dispatcher ---- */
@@ -71,13 +77,18 @@ impl<'a> Game<'a> {
     
     /* -------- */
     
-    Game {
+    let mut game = Game {
       gl,
       world,
       update_dispatcher,
       render_dispatcher,
       shader
-    }
+    };
+
+    game.create_scene1();
+    game.world.maintain();
+
+    game
   }
 
   pub fn tick(&mut self) {
@@ -98,12 +109,12 @@ impl<'a> Game<'a> {
 
 impl<'a> Game<'a> {
   pub fn create_scene1(&mut self) {
-    for k in 0..100 {
-      let n = 3 + (k % 6);
-      let px = 2.0 * (0.1 * (k as f32));
-      let py = 2.0 * (0.1 * (k as f32));
-      let vx = 0.001;
-      let vy = 0.001;
+    for _ in 0..100 {
+      let n = 3 + rand::thread_rng().gen_range(0, 6);
+      let px = 2.0 * (rand::random::<f32>() * 2.0 - 1.0);
+      let py = 2.0 * (rand::random::<f32>() * 2.0 - 1.0);
+      let vx = 0.001 * (rand::random::<f32>() * 2.0 - 1.0);
+      let vy = 0.001 * (rand::random::<f32>() * 2.0 - 1.0);
 
       self.world.create_entity()
         .with(components::Geom2d { shape : geom::ConvexPoly::regular(n, 0.08) })

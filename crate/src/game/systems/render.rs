@@ -122,18 +122,22 @@ impl<'b> System<'b> for RenderSystem {
       self.gl.buffer_data_u8_slice(glow::ELEMENT_ARRAY_BUFFER, ebo_data_u8, glow::DYNAMIC_DRAW);
 
       // single draw call
+      // https://registry.khronos.org/webgl/specs/latest/2.0/#5.18
       // self.gl.enable(glow::PRIMITIVE_RESTART_FIXED_INDEX);
-      self.gl.enable(glow::BLEND);
-
       let ebo_len = max_vbo_idx + num_shapes;
-      self.gl.draw_elements(glow::TRIANGLE_FAN, ebo_len.try_into().unwrap(), glow::UNSIGNED_INT, 0);
-
-      self.gl.blend_func(glow::SRC_COLOR, glow::ONE_MINUS_SRC_COLOR);
+      
+      {
+        self.gl.enable(glow::BLEND);
+        self.gl.blend_func(glow::SRC_COLOR, glow::ONE_MINUS_SRC_COLOR);
+        self.gl.draw_elements(glow::TRIANGLE_FAN, ebo_len.try_into().unwrap(), glow::UNSIGNED_INT, 0);
+      }
 
       // outlines
-      self.gl.disable(glow::BLEND);
-      self.gl.draw_elements(glow::LINE_LOOP, ebo_len.try_into().unwrap(), glow::UNSIGNED_INT, 0);
-      
+      {
+        self.gl.disable(glow::BLEND);
+        self.gl.draw_elements(glow::LINE_LOOP, ebo_len.try_into().unwrap(), glow::UNSIGNED_INT, 0);
+      }
+
       // self.gl.disable(glow::PRIMITIVE_RESTART_FIXED_INDEX);
     }
 

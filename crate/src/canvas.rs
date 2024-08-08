@@ -2,7 +2,7 @@
 // use wasm_bindgen::prelude::*;
 use wasm_bindgen::JsCast;
 use wasm_bindgen::JsValue;
-use web_sys::WebGl2RenderingContext as GL;
+// use web_sys::WebGl2RenderingContext as GL;
 use web_sys::*;
 
 pub fn create_webgl_context(
@@ -14,7 +14,7 @@ pub fn create_webgl_context(
     .dyn_into::<WebGl2RenderingContext>()?;
 
   gl.clear_color(0.0, 0.0, 0.0, 1.0);
-  gl.enable(GL::DEPTH_TEST);
+  // gl.enable(GL::DEPTH_TEST);
 
   Ok(gl)
 }
