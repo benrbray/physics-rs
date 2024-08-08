@@ -122,7 +122,7 @@ impl<'b> System<'b> for RenderSystem {
       self.gl.buffer_data_u8_slice(glow::ELEMENT_ARRAY_BUFFER, ebo_data_u8, glow::DYNAMIC_DRAW);
 
       // single draw call
-      self.gl.enable(glow::PRIMITIVE_RESTART_FIXED_INDEX);
+      // self.gl.enable(glow::PRIMITIVE_RESTART_FIXED_INDEX);
       self.gl.enable(glow::BLEND);
 
       let ebo_len = max_vbo_idx + num_shapes;

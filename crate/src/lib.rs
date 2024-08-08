@@ -2,6 +2,7 @@ mod utils;
 mod webgl;
 mod game;
 mod geom;
+mod graphics;
 mod canvas;
 mod console;
 

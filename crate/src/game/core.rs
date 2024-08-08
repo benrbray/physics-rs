@@ -1,12 +1,13 @@
 use std::rc::Rc;
 
-use glow::Context;
+use glow::{Context, HasContext};
 use specs::prelude::*;
 use web_sys::HtmlCanvasElement;
 
 use crate::canvas;
 use crate::game::components;
 use crate::geom;
+use crate::graphics::shader::Shader;
 use super::systems::time::{PrintTimeSystem,Time};
 use super::systems::render::RenderSystem;
 
@@ -16,7 +17,8 @@ pub struct Game<'a> {
   gl: Rc<Context>,
   world: World,
   update_dispatcher: Dispatcher<'a, 'a>,
-  render_dispatcher: Dispatcher<'a, 'a>
+  render_dispatcher: Dispatcher<'a, 'a>,
+  pub shader : Shader
 }
 
 impl<'a> Game<'a> {
@@ -36,35 +38,46 @@ impl<'a> Game<'a> {
 
     let ctx = canvas::create_webgl_context(canvas).unwrap();
     let gl = Rc::new(glow::Context::from_webgl2_context(ctx));
-    let render_system = RenderSystem::build(Rc::clone(&gl));
+    unsafe {
+      gl.clear_color(0.1, 0.2, 0.3, 1.0);
+    }
     
     let mut render_dispatcher = {
+      let render_system = RenderSystem::build(Rc::clone(&gl));
       let render_builder = DispatcherBuilder::new();
       
       render_builder
         // thread-local systems always execute at the end of dispatch
         .with_thread_local(render_system)
+        .with_barrier()
         .build()
     };
 
-    // set up world
+    /* ---- world ---- */
+
     let mut world = World::new();
     update_dispatcher.setup(&mut world);
     render_dispatcher.setup(&mut world);
 
     world.insert(Time(0.0));
-    
 
+    /* ---- compile shaders ---- */
+
+    let vert_src = include_str!("../../shaders/basic/basic.vert");
+    let frag_src = include_str!("../../shaders/basic/basic.frag");
+    let shader = Shader::build(&gl, vert_src, frag_src, &[]).unwrap();
+
+    shader.activate(&gl);
+    
+    /* -------- */
+    
     Game {
       gl,
       world,
       update_dispatcher,
-      render_dispatcher
+      render_dispatcher,
+      shader
     }
-
-    // game.create_scene1();
-
-    // game
   }
 
   pub fn tick(&mut self) {
