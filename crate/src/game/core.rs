@@ -1,3 +1,5 @@
+use std::cell::RefCell;
+use std::collections::VecDeque;
 use std::rc::Rc;
 
 use glow::{Context, HasContext};
@@ -5,7 +7,9 @@ use specs::prelude::*;
 use web_sys::HtmlCanvasElement;
 use rand::prelude::*;
 
-use crate::canvas;
+use crate::canvas::attach_events;
+use crate::{canvas};
+use crate::console::*;
 use crate::game::components;
 use crate::geom;
 use crate::graphics::shader::Shader;
@@ -15,20 +19,39 @@ use super::systems::physics::PhysicsSystem;
 
 ////////////////////////////////////////////////////////////////////////////////
 
+pub enum Event {
+  MouseDown(i32, i32)
+}
+
+pub enum Command {
+  ReloadShader,
+  Pause,
+  Quit
+}
+
+pub struct Store<'a> {
+  // game loop
+  pub events   : VecDeque<Event>,
+  pub commands : VecDeque<Command>,
+  // specs
+  pub world: World,
+  pub update_dispatcher: Dispatcher<'a, 'a>,
+  pub render_dispatcher: Dispatcher<'a, 'a>,
+}
+
 pub struct Game<'a> {
+  // game loop
+  pub store   : Rc<RefCell<Store<'a>>>,
+  // graphics
   gl: Rc<Context>,
-  world: World,
-  update_dispatcher: Dispatcher<'a, 'a>,
-  render_dispatcher: Dispatcher<'a, 'a>,
   pub shader : Shader
 }
 
 impl<'a> Game<'a> {
   pub fn new(
-    canvas: HtmlCanvasElement
+    canvas: &HtmlCanvasElement
     // gl: &'a Context
   ) -> Game<'a> {
-
     canvas.set_width(600);
     canvas.set_height(600);
     
@@ -76,23 +99,37 @@ impl<'a> Game<'a> {
     shader.activate(&gl);
     
     /* -------- */
-    
-    let mut game = Game {
-      gl,
+
+    let store = Rc::new(RefCell::new(Store {
+      events : VecDeque::new(),
+      commands : VecDeque::new(),
       world,
       update_dispatcher,
       render_dispatcher,
+    }));
+    
+    let mut game = Game {
+      store,
+      gl,
       shader
     };
 
     game.create_scene1();
-    game.world.maintain();
+    game.store.borrow_mut().world.maintain();
 
     game
   }
+}
 
-  pub fn tick(&mut self) {
+/* ---- Update -------------------------------------------------------------- */
+
+impl<'a> Store<'a> {
+  pub fn update(&mut self) {
+    self.process_events();
+    self.process_commands();
+
     {
+      // timekeeping
       let mut sim_time = self.world.write_resource::<Time>();
       *sim_time = Time(sim_time.0 + 1.0);
     }
@@ -101,14 +138,65 @@ impl<'a> Game<'a> {
     self.world.maintain();
   }
 
-  pub fn render(&mut self) {
-    self.render_dispatcher.dispatch(&self.world);
-    self.world.maintain();
+  fn process_events(&mut self) {
+    while let Some(cmd) = self.events.pop_front() {
+      match cmd {
+        Event::MouseDown(x,y) => {
+          console_log!("mouse_down");
+        }
+      }
+    }
+  }
+
+  fn process_commands(&mut self) -> bool {
+    while let Some(cmd) = self.commands.pop_front() {
+      match cmd {
+        Command::Quit         => { return true; }
+        Command::Pause        => {
+          console_log!("pause");
+        }
+        Command::ReloadShader => {
+          console_log!("reload shader");
+          // self.shader.reload(self.gl).unwrap();
+          // self.shader.activate(self.gl);
+        }
+      }
+    }
+
+    false
   }
 }
 
 impl<'a> Game<'a> {
+  pub fn tick(&self) {
+    let mut store = self.store.borrow_mut();
+    store.update();
+  }
+
+  pub fn send_event(&self, event: Event) {
+    self.store.borrow_mut().events.push_back(event);
+  }
+}
+
+/* ---- Render -------------------------------------------------------------- */
+
+impl<'a> Store<'a> {
+  pub fn render(&mut self) {
+    self.render_dispatcher.dispatch(&self.world);
+  }
+}
+
+impl<'a> Game<'a> {
+  pub fn render(&self) {
+    self.store.borrow_mut().render();
+  }
+}
+
+/* ---- Scene --------------------------------------------------------------- */
+
+impl<'a> Game<'a> {
   pub fn create_scene1(&mut self) {
+    let mut store = self.store.borrow_mut();
     for _ in 0..100 {
       let n = 3 + rand::thread_rng().gen_range(0, 6);
       let px = 2.0 * (rand::random::<f32>() * 2.0 - 1.0);
@@ -116,7 +204,7 @@ impl<'a> Game<'a> {
       let vx = 0.001 * (rand::random::<f32>() * 2.0 - 1.0);
       let vy = 0.001 * (rand::random::<f32>() * 2.0 - 1.0);
 
-      self.world.create_entity()
+      store.world.create_entity()
         .with(components::Geom2d { shape : geom::ConvexPoly::regular(n, 0.08) })
         .with(components::Position { pos : (px, py) })
         .with(components::Velocity { x : vx, y : vy })

@@ -24,7 +24,7 @@ pub fn greet() {
 #[cfg(target_arch = "wasm32")]
 #[wasm_bindgen]
 pub struct WebClient {
-  game: RefCell<Game<'static>>
+  game: Rc<Game<'static>>
 }
 
 #[cfg(target_arch = "wasm32")]
@@ -34,7 +34,7 @@ impl WebClient {
   #[wasm_bindgen(constructor)]
   pub fn new(
     canvas: HtmlCanvasElement
-  ) -> WebClient {
+  ) -> Result<WebClient, JsValue> {
     utils::set_panic_hook();
 
 
@@ -43,17 +43,20 @@ impl WebClient {
     // let gl = glow::Context::from_webgl2_context(ctx);
     // let game = RefCell::new(Game::new(&gl));
 
-    let game = RefCell::new(Game::new(canvas));
+    let game = Rc::new(Game::new(&canvas));
 
-    WebClient {
+    canvas::attach_events(&canvas, Rc::clone(&game))?;
+
+    Ok(WebClient {
       game
-    }
+    })
   }
 
   /// Perform one step of simulation.
   #[wasm_bindgen]
-  pub fn tick(&self) -> Result<(), JsValue> {
-    let mut game = self.game.borrow_mut();
+  pub fn tick(&mut self) -> Result<(), JsValue> {
+    // let game = Rc::make_mut(&mut self.game).unwrap();
+    let game = &self.game;
     game.tick();
     game.render();
     
