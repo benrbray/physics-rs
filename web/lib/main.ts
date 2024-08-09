@@ -6,6 +6,10 @@ let game: WebClient|null = null;
 export const initGame = (canvas: HTMLCanvasElement) => {
   game = new WebClient(canvas);
 
+  canvas.addEventListener("mousedown", () => {
+    canvas.focus();
+  });
+
   const loop = () => {
     game!.tick();
     requestAnimationFrame(loop);

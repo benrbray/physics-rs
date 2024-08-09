@@ -8,5 +8,5 @@ export const Demo = () => {
     initGame(demoElt);
   });
 
-  return <canvas ref={demoElt} />
+  return <canvas tabIndex={1} ref={demoElt} />
 }

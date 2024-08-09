@@ -6,3 +6,6 @@ pub use position::*;
 
 pub mod velocity;
 pub use velocity::*;
+
+pub mod player;
+pub use player::*;

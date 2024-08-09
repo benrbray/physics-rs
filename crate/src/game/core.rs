@@ -1,5 +1,6 @@
 use std::cell::RefCell;
 use std::collections::VecDeque;
+use std::fmt::*;
 use std::rc::Rc;
 
 use glow::{Context, HasContext};
@@ -8,11 +9,16 @@ use web_sys::HtmlCanvasElement;
 use rand::prelude::*;
 
 use crate::canvas::attach_events;
-use crate::{canvas};
+
 use crate::console::*;
 use crate::game::components;
+use crate::canvas;
 use crate::geom;
+use crate::state;
 use crate::graphics::shader::Shader;
+use super::controls::keyboard::Key;
+use super::systems::event::EventSystem;
+use super::systems::player_control::PlayerControlSystem;
 use super::systems::time::{PrintTimeSystem,Time};
 use super::systems::render::RenderSystem;
 use super::systems::physics::PhysicsSystem;
@@ -20,15 +26,20 @@ use super::systems::physics::PhysicsSystem;
 ////////////////////////////////////////////////////////////////////////////////
 
 pub enum Event {
-  MouseDown(i32, i32)
+  MouseDown(i32, i32),
+  KeyDown(Key),
+  KeyUp(Key)
 }
 
 pub enum Command {
+  // graphics
   ReloadShader,
+  // application
   Pause,
   Quit
 }
 
+/// Holds all mutable state related to the `Game`.
 pub struct Store<'a> {
   // game loop
   pub events   : VecDeque<Event>,
@@ -60,6 +71,8 @@ impl<'a> Game<'a> {
     let update_builder = DispatcherBuilder::new();
     let mut update_dispatcher = update_builder
       // .with(PrintTimeSystem, "print_time", &[])
+	    // .with(EventSystem::build(), "player_control", &[])
+	    .with(PlayerControlSystem::build(), "player_control", &[])
 	    .with(PhysicsSystem::build(), "physics", &[])
       .build();
 
@@ -89,6 +102,20 @@ impl<'a> Game<'a> {
     render_dispatcher.setup(&mut world);
 
     world.insert(Time(0.0));
+
+    world.insert(state::GameState {
+      key_left: false,
+      key_right: false,
+      key_up: false,
+      key_down: false
+    });
+
+    world.create_entity()
+      .with(components::Geom2d { shape : geom::ConvexPoly::regular(3, 0.04) })
+      .with(components::Player)
+      .with(components::Position { pos : (0.0, 0.0) })
+      .with(components::Velocity { x : 0.0, y : 0.0 })
+      .build();
 
     /* ---- compile shaders ---- */
 
@@ -125,7 +152,6 @@ impl<'a> Game<'a> {
 
 impl<'a> Store<'a> {
   pub fn update(&mut self) {
-    self.process_events();
     self.process_commands();
 
     {
@@ -136,16 +162,6 @@ impl<'a> Store<'a> {
 
     self.update_dispatcher.dispatch(&self.world);
     self.world.maintain();
-  }
-
-  fn process_events(&mut self) {
-    while let Some(cmd) = self.events.pop_front() {
-      match cmd {
-        Event::MouseDown(x,y) => {
-          console_log!("mouse_down");
-        }
-      }
-    }
   }
 
   fn process_commands(&mut self) -> bool {
