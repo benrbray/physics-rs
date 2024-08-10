@@ -1,28 +1,21 @@
-use std::rc::Rc;
-
 use specs::prelude::*;
-use crate::game::components;
-use crate::{state, Event, Game};
+use crate::event::Event;
+use crate::state;
 use crate::console::*;
 use crate::game::controls::keyboard::Key;
 
-pub struct EventSystem {
-  game : Rc<Game<'static>>
-}
+pub struct EventSystem;
 
 // resources required for execution
 #[derive(SystemData)]
 pub struct EventSystemData<'a> {
-	game_state: Write<'a, state::GameState>
+	game_state: Write<'a, state::GameState>,
+	event_queue: Write<'a, state::EventQueue>
 }
 
 impl EventSystem {
-  pub fn build(
-    game: Rc<Game<'static>>
-  ) -> EventSystem {
-    EventSystem {
-      game
-    }
+  pub fn build() -> EventSystem {
+    EventSystem
   }
 }
 
@@ -30,15 +23,13 @@ impl<'b> System<'b> for EventSystem {
   type SystemData = EventSystemData<'b>;
 
   fn run(&mut self, mut data: EventSystemData) {
-    let mut store = self.game.store.borrow_mut();
-
-    while let Some(cmd) = store.events.pop_front() {
+    while let Some(cmd) = data.event_queue.events.pop_front() {
       match cmd {
         Event::MouseDown(x,y) => {
-          console_log!("mouse_down");
+          // console_log!("mouse_down");
         }
         Event::KeyDown(key) => {
-          console_log!("key_down: {:#?}", key);
+          // console_log!("key_down: {:#?}", key);
           match key {
             Key::ArrowDown  => { data.game_state.key_down  = true; }
             Key::ArrowUp    => { data.game_state.key_up    = true; }
@@ -48,7 +39,7 @@ impl<'b> System<'b> for EventSystem {
           };
         }
         Event::KeyUp(key) => {
-          console_log!("key_up: {:#?}", key);
+          // console_log!("key_up: {:#?}", key);
           match key {
             Key::ArrowDown  => { data.game_state.key_down  = false; }
             Key::ArrowUp    => { data.game_state.key_up    = false; }

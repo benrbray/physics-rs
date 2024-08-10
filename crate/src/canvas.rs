@@ -10,7 +10,8 @@ use wasm_bindgen::prelude::*;
 // use web_sys::WebGl2RenderingContext as GL;
 use web_sys::*;
 
-use crate::{Game, Event};
+use crate::Game;
+use crate::event::Event;
 use crate::game::controls::keyboard::Key;
 use crate::console::*;
 
@@ -33,6 +34,7 @@ pub fn attach_events(
 ) -> Result<(), JsValue> {
   attach_mouse_down_handler(canvas, Rc::clone(&game))?;
   attach_key_down_handler(canvas, Rc::clone(&game))?;
+  attach_key_up_handler(canvas, Rc::clone(&game))?;
 
   Ok(())
 }
@@ -81,6 +83,26 @@ fn attach_key_down_handler (
 
   let handler = Closure::<dyn FnMut(_)>::new(handler);
   canvas.add_event_listener_with_callback("keydown", handler.as_ref().unchecked_ref())?;
+
+  // TODO (Ben @ 2024/08/09) will forget() leak memory?
+  handler.forget();
+  
+  Ok(())
+}
+
+fn attach_key_up_handler (
+  canvas: &HtmlCanvasElement,
+  game: Rc<Game<'static>>
+) -> Result<(), JsValue> {
+  let handler = move |event: web_sys::KeyboardEvent| {
+    if let Some(key) = convert_key(event.key()) {
+      game.send_event(Event::KeyUp(key));
+      event.prevent_default();
+    }
+  };
+
+  let handler = Closure::<dyn FnMut(_)>::new(handler);
+  canvas.add_event_listener_with_callback("keyup", handler.as_ref().unchecked_ref())?;
 
   // TODO (Ben @ 2024/08/09) will forget() leak memory?
   handler.forget();

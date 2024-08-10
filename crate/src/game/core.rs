@@ -1,6 +1,5 @@
 use std::cell::RefCell;
 use std::collections::VecDeque;
-use std::fmt::*;
 use std::rc::Rc;
 
 use glow::{Context, HasContext};
@@ -8,28 +7,21 @@ use specs::prelude::*;
 use web_sys::HtmlCanvasElement;
 use rand::prelude::*;
 
-use crate::canvas::attach_events;
-
 use crate::console::*;
 use crate::game::components;
 use crate::canvas;
 use crate::geom;
 use crate::state;
 use crate::graphics::shader::Shader;
-use super::controls::keyboard::Key;
-use super::systems::event::EventSystem;
+use crate::state::EventQueue;
+use super::event::Event;
 use super::systems::player_control::PlayerControlSystem;
-use super::systems::time::{PrintTimeSystem,Time};
+use super::systems::time::Time;
 use super::systems::render::RenderSystem;
 use super::systems::physics::PhysicsSystem;
+use super::systems::event::EventSystem;
 
 ////////////////////////////////////////////////////////////////////////////////
-
-pub enum Event {
-  MouseDown(i32, i32),
-  KeyDown(Key),
-  KeyUp(Key)
-}
 
 pub enum Command {
   // graphics
@@ -71,7 +63,7 @@ impl<'a> Game<'a> {
     let update_builder = DispatcherBuilder::new();
     let mut update_dispatcher = update_builder
       // .with(PrintTimeSystem, "print_time", &[])
-	    // .with(EventSystem::build(), "player_control", &[])
+	    .with(EventSystem::build(), "event_system", &[])
 	    .with(PlayerControlSystem::build(), "player_control", &[])
 	    .with(PhysicsSystem::build(), "physics", &[])
       .build();
@@ -153,6 +145,7 @@ impl<'a> Game<'a> {
 impl<'a> Store<'a> {
   pub fn update(&mut self) {
     self.process_commands();
+    self.process_events();
 
     {
       // timekeeping
@@ -162,6 +155,14 @@ impl<'a> Store<'a> {
 
     self.update_dispatcher.dispatch(&self.world);
     self.world.maintain();
+  }
+
+  fn process_events(&mut self) {
+    // TODO (Ben @ 2024/08/10) avoid transferring events between queues?
+    while let Some(evt) = self.events.pop_front() {
+      let mut queue = self.world.write_resource::<EventQueue>();
+      queue.events.push_back(evt);
+    }
   }
 
   fn process_commands(&mut self) -> bool {
