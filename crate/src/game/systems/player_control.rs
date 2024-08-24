@@ -37,16 +37,16 @@ impl<'b> System<'b> for PlayerControlSystem {
   fn run(&mut self, mut data: PlayerControlSystemData) {
     for (vel, _) in (&mut data.velocity, &data.player).join() {
       const FRICTION: f32 = 0.98;
-      const ACCEL: f32 = 0.01;
+      const ACCEL: f32 = 0.05;
 
       // apply friction
       vel.x *= FRICTION;
       vel.y *= FRICTION;
       // apply control
-      if data.game_state.key_up    { vel.y += ACCEL; }
-      if data.game_state.key_down  { vel.y -= ACCEL; }
-      if data.game_state.key_left  { vel.x -= ACCEL; }
-      if data.game_state.key_right { vel.x += ACCEL; }
+      if data.game_state.key_up    { vel.y = ACCEL;  vel.x = 0.0; }
+      if data.game_state.key_down  { vel.y = -ACCEL; vel.x = 0.0; }
+      if data.game_state.key_left  { vel.x = -ACCEL; vel.y = 0.0; }
+      if data.game_state.key_right { vel.x = ACCEL;  vel.y = 0.0; }
 
       // vel.x = clamp_vel(vel.x);
       // vel.y = clamp_vel(vel.y);

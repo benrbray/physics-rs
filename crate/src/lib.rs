@@ -5,6 +5,7 @@ mod geom;
 mod graphics;
 mod canvas;
 mod console;
+mod bvh;
 
 use console::*;
 use game::*;

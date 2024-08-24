@@ -6,10 +6,12 @@ build-web:
 
 build: build-crate build-web
 
-debug:
+build-debug:
   cd crate && wasm-pack build --debug
 
 dev-web:
   cd web && pnpm run dev
+
+dev-debug: build-debug dev-web
 
 dev: build-crate dev-web

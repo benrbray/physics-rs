@@ -64,7 +64,9 @@ impl<'a> Game<'a> {
     let mut update_dispatcher = update_builder
       // .with(PrintTimeSystem, "print_time", &[])
 	    .with(EventSystem::build(), "event_system", &[])
+      .with_barrier()
 	    .with(PlayerControlSystem::build(), "player_control", &[])
+      .with_barrier()
 	    .with(PhysicsSystem::build(), "physics", &[])
       .build();
 
