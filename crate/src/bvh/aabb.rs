@@ -1,5 +1,6 @@
 use nalgebra::{self, Vector2};
 use slotmap::{new_key_type, SlotMap};
+use std::collections::BinaryHeap;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -22,7 +23,6 @@ impl AABB {
     let diffs = self.upper_bound - self.lower_bound;
     return 2.0 * (diffs.x + diffs.y);
   }
-
 
   pub fn ray_cast(&self, p1: Vector2<f32>, p2: Vector2<f32>) -> bool {
     // todo
@@ -171,3 +171,113 @@ impl<D> Tree<D> {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
+fn tree_cost<D>(tree: &Tree<D>) -> f32 {
+  let mut cost = 0.0;
+  // we only compare trees with the same leaf nodes,
+  // so they are excluded from the cost computation
+  for (_, node) in &tree.nodes {
+    if let NodeKind::Internal { .. } = node.kind {
+      cost += node.volume.surface_area();
+    }
+  }
+  cost
+}
+
+use std::cmp::Reverse;
+use ordered_float::OrderedFloat;
+
+#[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd)]
+struct Candidate {
+  /// estimated cost of replacing self with a new
+  /// parent node whose children are this and V
+  cost_estimate: Reverse<OrderedFloat<f32>>,
+  /// increased surface area caused by refitting
+  /// all ancestors of this node to include V
+  cost_inherit: Reverse<OrderedFloat<f32>>,
+  /// index of this candidate
+  idx: NodeIdx
+}
+
+impl Candidate {
+  fn new(cost_estimate: f32, cost_inherit: f32, idx: NodeIdx) -> Self {
+    Candidate {
+      cost_estimate : Reverse(OrderedFloat(cost_estimate)),
+      cost_inherit  : Reverse(OrderedFloat(cost_inherit)),
+      idx
+    }
+  }
+}
+
+// increased surface area due to refitting nodes[idx] to include volume
+fn delta_cost<D>(tree: &Tree<D>, volume: &AABB, idx: NodeIdx) -> f32 {
+  let node = &tree.nodes[idx];
+  let old_cost = node.volume.surface_area();
+  let new_cost = AABB::join(&node.volume, volume).surface_area();
+  return new_cost - old_cost;
+}
+
+fn find_best_sibling<D>(tree: &Tree<D>, root_idx: NodeIdx, volume: &AABB) -> NodeIdx {
+  // priority queue of candidate nodes
+  let mut priority_queue = BinaryHeap::new();
+  
+  // Cost(Root) = Area(V ∪ Root)
+  let root_cost = delta_cost(tree, volume, root_idx);
+  let root_candidate = Candidate::new(root_cost, 0.0, root_idx); 
+  priority_queue.push(root_candidate);
+  
+  // branch and bound
+  let mut best_idx = root_idx;
+  let mut best_cost = root_cost;
+
+  while let Some(current) = priority_queue.pop() {
+    // current volume C
+    let current_node = &tree.nodes[current.idx];
+
+
+    // direct cost is the surface area of the new internal
+    // node that will be created to hold new leaf and sibling
+    //   DirectCost(C) = Area(C ∪ V)
+    let direct_cost = AABB::join(volume, &current_node.volume).surface_area();
+
+    // increased surface area caused by refitting C to include V
+    //   DeltaCost(C) = Area(C ∪ V) - Area(C)
+    let delta_cost = direct_cost - current_node.volume.surface_area();
+
+    // inherited cost is the increased surface area
+    // caused by refitting volumes of all ancestors
+    let inherited_cost = current.cost_inherit.0.0;
+
+    // TotalCost(C) = DirectCost(C) + InheritedCost(C)
+    let total_cost = direct_cost + inherited_cost;
+
+    if total_cost < best_cost {
+      best_idx  = current.idx;
+      best_cost = total_cost;
+    }
+
+    // consider pushing this node's children onto the queue
+    if let NodeKind::Internal { child1, child2 } = current_node.kind {
+      // For any descendant D of C, we have the following lower bound:
+      //   Cost(D)
+      //     = DirectCost(D) + InheritedCost(D)                   (by definition)
+      //     = Area(D ∪ V)   + InheritedCost(D)                   (by definition)
+      //    >= Area(D ∪ V)   + InheritedCost(C) + DeltaCost(C)    (D descendent of C)
+      //    >= Area(V)       + InheritedCost(C) + DeltaCost(C)    (monotonicity of area)
+      let cost_passed_to_children = inherited_cost + delta_cost;
+      let child_lower_bound = volume.surface_area() + cost_passed_to_children;
+
+      if child_lower_bound < best_cost {
+        for child in [child1, child2] {
+          priority_queue.push(Candidate::new(
+            child_lower_bound,
+            cost_passed_to_children,
+            child
+          ));
+        }
+      }
+    }
+  }
+
+  best_idx
+}
