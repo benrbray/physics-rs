@@ -1,5 +1,22 @@
 use specs::prelude::*;
 use crate::game::components;
+use crate::bvh::aabb;
+
+////////////////////////////////////////////////////////////////////////////////
+
+pub struct CollisionData {
+  bvh: aabb::Tree<()> 
+}
+
+impl Default for CollisionData {
+  fn default() -> CollisionData {
+    CollisionData {
+      bvh : aabb::Tree::new()
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
 
 pub struct PhysicsSystem;
 
@@ -7,7 +24,8 @@ pub struct PhysicsSystem;
 #[derive(SystemData)]
 pub struct PhysicsSystemData<'a> {
   position: WriteStorage<'a, components::Position>,
-  velocity: ReadStorage<'a, components::Velocity>
+  velocity: ReadStorage<'a, components::Velocity>,
+  collisions: Read<'a, CollisionData>
 }
 
 impl PhysicsSystem {

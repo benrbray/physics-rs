@@ -4,11 +4,11 @@ use std::collections::BinaryHeap;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-struct AABB {
+pub struct AABB {
   /// lower bound in each axis
-  lower_bound: nalgebra::Vector2<f32>,
+  pub lower_bound: nalgebra::Vector2<f32>,
   /// upper bound in each axis
-  upper_bound: nalgebra::Vector2<f32>
+  pub upper_bound: nalgebra::Vector2<f32>
 }
 
 impl AABB {
@@ -25,14 +25,14 @@ impl AABB {
   }
 
   pub fn ray_cast(&self, p1: Vector2<f32>, p2: Vector2<f32>) -> bool {
-    // todo
-    return false;
+    // TODO (Ben @ 2024/08/25) ray cast volumes
+    panic!("not implemented");
   } 
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
-enum NodeKind<D> {
+pub enum NodeKind<D> {
   Internal {
     child1: NodeIdx,
     child2: NodeIdx,
@@ -47,13 +47,13 @@ new_key_type! {
   struct NodeIdx;
 }
 
-struct Node<D> {
+pub struct Node<D> {
   parent : Option<NodeIdx>,
   volume : AABB,
   kind   : NodeKind<D>,
 }
 
-struct Tree<D> {
+pub struct Tree<D> {
   nodes    : SlotMap<NodeIdx, Node<D>>,
   root_idx : Option<NodeIdx>
 }
@@ -61,6 +61,13 @@ struct Tree<D> {
 ////////////////////////////////////////////////////////////////////////////////
 
 impl<D> Tree<D> {
+  pub fn new() -> Self {
+    return Tree {
+      nodes : SlotMap::default(),
+      root_idx : None
+    }
+  }
+
   pub fn ray_cast(&self, p1: Vector2<f32>, p2: Vector2<f32>) -> bool {
     match self.root_idx {
       None => { return false; }
@@ -95,7 +102,7 @@ impl<D> Tree<D> {
   }
 
   /// dynamic insertion
-  pub fn insert_leaf(&mut self, object_id: NodeIdx, volume: AABB, data: D) {
+  pub fn insert_leaf(&mut self, volume: AABB, data: D) {
     // create new leaf
     let leaf_idx: NodeIdx = self.nodes.insert(Node {
       volume,
@@ -103,48 +110,58 @@ impl<D> Tree<D> {
       kind   : NodeKind::Leaf { data }
     });
 
-    // 1: find the best sibling for the new leaf
-    let sibling_idx: NodeIdx = panic!("not implemented"); // TODO
-    let sibling = &mut self.nodes[sibling_idx];
-    let old_parent_idx = sibling.parent;
+    if let Some(root_idx) = self.root_idx {
+      // 1. tree is non-empty, so search for the best sibling
+      // to join with the leaf under a new parent node
+      let sibling_idx: NodeIdx = find_best_sibling(self, root_idx, &self.nodes[leaf_idx].volume);
+      let old_parent_idx = self.nodes[sibling_idx].parent;
 
-    // 2: replace sibling with new_parent, whose children are sibling and leaf
-    let new_parent_idx = self.nodes.insert(Node {
-      parent : old_parent_idx,
-      volume : AABB::join(&volume, &sibling.volume),
-      kind : NodeKind::Internal {
-        child1 : sibling_idx,
-        child2 : leaf_idx
-      }
-    });
+      // 2: replace sibling with new_parent, whose children are sibling and leaf
+      let new_parent_volume = AABB::join(
+        &self.nodes[leaf_idx].volume,
+        &self.nodes[sibling_idx].volume
+      );
 
-    // set new_parent to be the parent of leaf and sibling
-    {
-      let leaf = &mut self.nodes[leaf_idx];
-      leaf.parent = Some(new_parent_idx);
-      sibling.parent = Some(new_parent_idx);
-    }
-
-    // ensure that old_parent points to new_parent
-    if let Some(old_parent_idx) = old_parent_idx {
-      // sibling was not the root, so replace
-      // it with new_parent under old_parent
-      let old_parent = &mut self.nodes[old_parent_idx];
-      match old_parent.kind {
-        NodeKind::Internal { ref mut child1, ref mut child2 } => {
-          if *child1 == sibling_idx { *child1 = new_parent_idx; }
-          if *child2 == sibling_idx { *child2 = new_parent_idx; }
+      let new_parent_idx = self.nodes.insert(Node {
+        parent : old_parent_idx,
+        volume : new_parent_volume,
+        kind : NodeKind::Internal {
+          child1 : sibling_idx,
+          child2 : leaf_idx
         }
-        _ => unreachable!("old_parent cannot be a leaf")
-      }
-    } else {
-      // sibling was the root, so
-      // make new_parent the root
-      self.root_idx = Some(new_parent_idx);
-    }
+      });
 
-    // 3: walk back up the tree, refitting AABBs
-    self.refit_ancestors(leaf_idx);
+      // set new_parent to be the parent of leaf and sibling
+      {
+        let leaf = &mut self.nodes[leaf_idx];
+        leaf.parent = Some(new_parent_idx);
+        self.nodes[sibling_idx].parent = Some(new_parent_idx);
+      }
+
+      // ensure that old_parent points to new_parent
+      if let Some(old_parent_idx) = old_parent_idx {
+        // sibling was not the root, so replace
+        // it with new_parent under old_parent
+        let old_parent = &mut self.nodes[old_parent_idx];
+        match old_parent.kind {
+          NodeKind::Internal { ref mut child1, ref mut child2 } => {
+            if *child1 == sibling_idx { *child1 = new_parent_idx; }
+            if *child2 == sibling_idx { *child2 = new_parent_idx; }
+          }
+          _ => unreachable!("old_parent cannot be a leaf")
+        }
+      } else {
+        // sibling was the root, so
+        // make new_parent the root
+        self.root_idx = Some(new_parent_idx);
+      }
+
+      // 3: walk back up the tree, refitting AABBs
+      self.refit_ancestors(leaf_idx);
+    } else {
+      // tree was empty, use new leaf as root
+      self.root_idx = Some(leaf_idx);
+    }
   }
 
   /// refits the volume of a single node to contain its children

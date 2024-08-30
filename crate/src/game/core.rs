@@ -7,6 +7,7 @@ use specs::prelude::*;
 use web_sys::HtmlCanvasElement;
 use rand::prelude::*;
 
+use crate::bvh::aabb::AABB;
 use crate::console::*;
 use crate::game::components;
 use crate::canvas;
@@ -223,10 +224,23 @@ impl<'a> Game<'a> {
       let vx = 0.001 * (rand::random::<f32>() * 2.0 - 1.0);
       let vy = 0.001 * (rand::random::<f32>() * 2.0 - 1.0);
 
+      let shape = geom::ConvexPoly::regular(n, 0.08);
+      
+      let min_x = shape.points.row(0).min();
+      let max_x = shape.points.row(0).max();
+      let min_y = shape.points.row(1).min();
+      let max_y = shape.points.row(1).max();
+
+      let aabb  = AABB {
+        lower_bound : nalgebra::Vector2::new(min_x, min_y),
+        upper_bound : nalgebra::Vector2::new(max_x, max_y)
+      }; 
+
       store.world.create_entity()
-        .with(components::Geom2d { shape : geom::ConvexPoly::regular(n, 0.08) })
+        .with(components::Geom2d { shape })
         .with(components::Position { pos : (px, py) })
         .with(components::Velocity { x : vx, y : vy })
+        .with(components::Collider { volume : aabb })
         .build();
     }
   }

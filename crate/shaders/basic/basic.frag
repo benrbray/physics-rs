@@ -4,7 +4,7 @@ precision mediump float;
 // uniform vec3 u_color;
 // uniform float u_time;
 
-in vec2 f_position;
+// in vec2 f_position;
 
 out vec4 color;
 
