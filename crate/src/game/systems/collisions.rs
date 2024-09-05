@@ -31,6 +31,10 @@ impl CollisionSystem {
   pub fn build() -> CollisionSystem {
     CollisionSystem
   }
+
+  pub fn register(&self, ) {
+
+  }
 }
 
 impl<'b> System<'b> for CollisionSystem {

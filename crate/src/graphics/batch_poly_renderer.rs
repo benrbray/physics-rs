@@ -82,9 +82,8 @@ impl BatchPolyRenderer {
       self.gl.bind_buffer(glow::ELEMENT_ARRAY_BUFFER, Some(self.ebo));
       self.gl.buffer_data_u8_slice(glow::ELEMENT_ARRAY_BUFFER, ebo_data_u8, glow::DYNAMIC_DRAW);
 
-      // single draw call
+      // render all shapes in single draw call using PRIMITIVE_RESTART_FIXED_INDEX
       // https://registry.khronos.org/webgl/specs/latest/2.0/#5.18
-      // self.gl.enable(glow::PRIMITIVE_RESTART_FIXED_INDEX);
       let ebo_len = max_vbo_idx + num_shapes;
       
       if show_fill {
@@ -98,8 +97,6 @@ impl BatchPolyRenderer {
       if show_outline {
         self.gl.draw_elements(glow::LINE_LOOP, ebo_len.try_into().unwrap(), glow::UNSIGNED_INT, 0);
       }
-
-      // self.gl.disable(glow::PRIMITIVE_RESTART_FIXED_INDEX);
     }
 
     // TODO isomorphic double buffering across web/window mode

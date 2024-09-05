@@ -16,6 +16,7 @@ use crate::state;
 use crate::graphics::shader::Shader;
 use crate::state::EventQueue;
 use super::event::Event;
+use super::systems::collisions::CollisionSystem;
 use super::systems::player_control::PlayerControlSystem;
 use super::systems::time::Time;
 use super::systems::render::RenderSystem;
@@ -63,12 +64,11 @@ impl<'a> Game<'a> {
 
     let update_builder = DispatcherBuilder::new();
     let mut update_dispatcher = update_builder
-      // .with(PrintTimeSystem, "print_time", &[])
-	    .with(EventSystem::build(), "event_system", &[])
+	    .with(EventSystem::build(),         "event_system",     &[])
+	    .with(PlayerControlSystem::build(), "player_control",   &["event_system"])
+	    .with(CollisionSystem::build(),     "collision_system", &[])
       .with_barrier()
-	    .with(PlayerControlSystem::build(), "player_control", &[])
-      .with_barrier()
-	    .with(PhysicsSystem::build(), "physics", &[])
+	    .with(PhysicsSystem::build(), "physics", &["collision_system"])
       .build();
 
     /* ---- render dispatcher ---- */
@@ -217,7 +217,7 @@ impl<'a> Game<'a> {
 impl<'a> Game<'a> {
   pub fn create_scene1(&mut self) {
     let mut store = self.store.borrow_mut();
-    for _ in 0..100 {
+    for _ in 0..20 {
       let n = 3 + rand::thread_rng().gen_range(0, 6);
       let px = 2.0 * (rand::random::<f32>() * 2.0 - 1.0);
       let py = 2.0 * (rand::random::<f32>() * 2.0 - 1.0);
