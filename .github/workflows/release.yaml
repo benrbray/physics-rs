@@ -76,7 +76,7 @@ jobs:
       # the registry-url option of actoins/setup-node does not support
       # specifying a subdirectory, so instead we must manually create an .npmrc
       - name: Configure .npmrc
-        working-directory: dirname
+        working-directory: ./web
         run: |
           echo "//npm.pkg.github.com/:_authToken=\${NODE_AUTH_TOKEN}" >> .npmrc
           echo "registry=https://npm.pkg.github.com" >> .npmrc
