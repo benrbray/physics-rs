@@ -84,7 +84,6 @@ jobs:
 
       # create release, upload artifact
       - uses: ncipollo/release-action@v1
-        working-directory: ./web
         with:
-          artifacts: "release/physics.tgz"
+          artifacts: "./web/release/physics.tgz"
           artifactContentType: application/gzip
