@@ -1,0 +1,90 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v[0-9]+.[0-9]+.[0-9]+'
+
+jobs:
+  build_wasm:
+    name: Build WASM
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      # checkout repository
+      - uses: actions/checkout@v4
+
+      # install just
+      - uses: extractions/setup-just@v3
+      
+      # rust setup
+      - name: Rust setup
+        run: |
+          rustup toolchain install stable --profile minimal
+          rustup --version
+
+      # cache rust dependencies
+      # https://docs.github.com/en/actions/use-cases-and-examples/building-and-testing/building-and-testing-rust#caching-dependencies
+      - name: Cache Rust Dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+      
+      # build rust
+      - name: Build Crate
+        run: |
+          just build-crate
+
+      # install pnpm (using cache)
+      # (see https://github.com/pnpm/action-setup?tab=readme-ov-file#use-cache-to-reduce-installation-time)
+      - uses: pnpm/action-setup@v4
+        name: Install PNPM
+        with:
+          version: 10
+          run_install: false
+
+      # setup .npmrc file to publish to GitHub Packages
+      - name: Install NodeJS
+        uses: actions/setup-node@v4
+        with:
+          node-version: 23
+          cache: 'pnpm'
+          registry-url: 'https://npm.pkg.github.com'
+          scope: '@benrbray'
+
+      # install dependencies
+      - name: Install Dependencies
+        working-directory: ./web
+        run: pnpm install
+
+      # build package
+      - name: Build Package
+        run: |
+          just build-web
+
+      # publish to package registry
+      - name: Publish to GitHub Package Registry
+        working-directory: ./web
+        run: pnpm publish --no-git-checks --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      
+      # create tarball for release
+      - name: Create Tarball
+        working-directory: ./web
+        run: |
+          mkdir -p release
+          pnpm pack --out release/physics.tgz
+
+      # create release, upload artifact
+      - uses: ncipollo/release-action@v1
+        working-directory: ./web
+        with:
+          artifacts: "release/physics.tgz"
+          artifactContentType: application/gzip

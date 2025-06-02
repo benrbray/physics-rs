@@ -12,7 +12,7 @@ importers:
         specifier: ^1.8.18
         version: 1.8.19
       wasm-physics:
-        specifier: link:../crate/pkg
+        specifier: ../crate/pkg
         version: link:../crate/pkg
     devDependencies:
       '@types/node':
