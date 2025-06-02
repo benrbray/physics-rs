@@ -21,7 +21,11 @@ export default defineConfig({
     tsConfigPaths(),
     dts({ rollupTypes: true }),
   ],
+  optimizeDeps: {
+    include: ["../crate/pkg"]
+  },
   build: {
+    target: "esnext",
     lib: {
       formats: ["es"],
       entry: resolve(__dirname, 'lib/main.ts')
