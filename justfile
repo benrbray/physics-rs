@@ -17,13 +17,13 @@ dev-debug: build-debug dev-web
 dev: build-crate dev-web
 
 release-major:
-  cd web && npm version major
+  cd web && mkdir .git && npm version major && rm -f .git
   git push --follow-tags
 
 release-minor:
-  cd web && npm version minor
+  cd web && mkdir .git && npm version minor && rm -f .git
   git push --follow-tags
 
 release-patch:
-  cd web && npm version patch
+  cd web && mkdir .git && npm version patch && rm -f .git
   git push --follow-tags
