@@ -15,3 +15,15 @@ dev-web:
 dev-debug: build-debug dev-web
 
 dev: build-crate dev-web
+
+release-major:
+  cd web && npm version major
+  git push --follow-tags
+
+release-minor:
+  cd web && npm version minor
+  git push --follow-tags
+
+release-patch:
+  cd web && npm version patch
+  git push --follow-tags
