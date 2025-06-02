@@ -79,7 +79,7 @@ jobs:
         working-directory: ./web
         run: |
           echo "//npm.pkg.github.com/:_authToken=\${NODE_AUTH_TOKEN}" >> .npmrc
-          echo "registry=https://npm.pkg.github.com" >> .npmrc
+          echo "@benrbray:registry=https://npm.pkg.github.com" >> .npmrc
           echo "always-auth: true" >> .npmrc
 
       # publish to package registry
