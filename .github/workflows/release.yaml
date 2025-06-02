@@ -37,7 +37,7 @@ jobs:
           path: |
             ~/.cargo/registry
             ~/.cargo/git
-            target
+            crate/target
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
       
       # build rust
@@ -59,7 +59,7 @@ jobs:
         with:
           node-version: 23
           cache: 'pnpm'
-          cache-dependency-path: "./web/package-lock.json"
+          cache-dependency-path: "web/package-lock.json"
           registry-url: 'https://npm.pkg.github.com'
           scope: '@benrbray'
 
