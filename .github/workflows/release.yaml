@@ -24,6 +24,7 @@ jobs:
         run: |
           rustup toolchain install stable --profile minimal
           rustup --version
+          cargo install wasm-pack
 
       # cache rust dependencies
       # https://docs.github.com/en/actions/use-cases-and-examples/building-and-testing/building-and-testing-rust#caching-dependencies
