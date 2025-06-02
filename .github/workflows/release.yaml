@@ -10,8 +10,8 @@ jobs:
     name: Build WASM
     runs-on: ubuntu-latest
     permissions:
-      contents: read
-      packages: write
+      contents: write # for release
+      packages: write # for package
     steps:
       # checkout repository
       - uses: actions/checkout@v4
