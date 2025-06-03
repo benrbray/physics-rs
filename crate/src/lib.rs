@@ -1,6 +1,6 @@
 mod utils;
 mod webgl;
-mod game;
+mod game_specs;
 mod geom;
 mod graphics;
 mod canvas;
@@ -8,7 +8,7 @@ mod console;
 mod bvh;
 
 use console::*;
-use game::*;
+use game_specs::*;
 use glow::Context;
 use wasm_bindgen::prelude::*;
 use web_sys::{HtmlCanvasElement, WebGl2RenderingContext};

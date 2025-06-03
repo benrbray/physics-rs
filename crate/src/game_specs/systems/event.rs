@@ -2,7 +2,7 @@ use specs::prelude::*;
 use crate::event::Event;
 use crate::state;
 use crate::console::*;
-use crate::game::controls::keyboard::Key;
+use crate::game_specs::controls::keyboard::Key;
 
 pub struct EventSystem;
 

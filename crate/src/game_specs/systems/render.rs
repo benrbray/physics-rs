@@ -2,7 +2,7 @@ use std::rc::Rc;
 
 use specs::prelude::*;
 use glow::HasContext;
-use crate::{game::components, graphics::batch_poly_renderer::BatchPolyRenderer};
+use crate::{game_specs::components, graphics::batch_poly_renderer::BatchPolyRenderer};
 
 ////////////////////////////////////////////////////////////////////////////////
 

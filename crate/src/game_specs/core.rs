@@ -9,7 +9,7 @@ use rand::prelude::*;
 
 use crate::bvh::aabb::AABB;
 use crate::console::*;
-use crate::game::components;
+use crate::game_specs::components;
 use crate::canvas;
 use crate::geom;
 use crate::state;

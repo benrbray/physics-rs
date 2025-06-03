@@ -12,7 +12,7 @@ use web_sys::*;
 
 use crate::Game;
 use crate::event::Event;
-use crate::game::controls::keyboard::Key;
+use crate::game_specs::controls::keyboard::Key;
 use crate::console::*;
 
 ////////////////////////////////////////////////////////////////////////////////

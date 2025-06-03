@@ -1,5 +1,5 @@
 use specs::prelude::*;
-use crate::game::components;
+use crate::game_specs::components;
 use crate::bvh::aabb;
 
 ////////////////////////////////////////////////////////////////////////////////

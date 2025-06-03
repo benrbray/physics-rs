@@ -6,4 +6,4 @@ pub mod state;
 pub mod event;
 pub mod resources;
 
-pub use crate::game::core::*;
+pub use crate::game_specs::core::*;
