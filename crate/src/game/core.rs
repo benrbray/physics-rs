@@ -234,7 +234,7 @@ impl<'a> Game<'a> {
       let aabb  = AABB {
         lower_bound : nalgebra::Vector2::new(min_x, min_y),
         upper_bound : nalgebra::Vector2::new(max_x, max_y)
-      }; 
+      };
 
       store.world.create_entity()
         .with(components::Geom2d { shape })

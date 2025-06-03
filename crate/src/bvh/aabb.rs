@@ -32,25 +32,31 @@ impl AABB {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-pub enum NodeKind<D> {
-  Internal {
-    child1: NodeIdx,
-    child2: NodeIdx,
-  },
-  Leaf {
-    data: D,
-  }
-}
-
-// indexing type for slotmap
+// slotmap provides a macro for defining the index type
 new_key_type! {
   struct NodeIdx;
 }
 
+/// A `Node` is either `NodeKind::Leaf` or `NodeKind::Internal`.  Regardless of
+/// the kind, each node is annotated with:
+/// - A reference to its parent, or `None` for the root.
+/// - An axis-aligned bounding box (AABB).
 pub struct Node<D> {
   parent : Option<NodeIdx>,
   volume : AABB,
   kind   : NodeKind<D>,
+}
+
+pub enum NodeKind<D> {
+  /// An `Internal` node stores the index of its left and right children.
+  Internal {
+    child1: NodeIdx,
+    child2: NodeIdx,
+  },
+  /// The actual data is stored in `Leaf` nodes.
+  Leaf {
+    data: D,
+  }
 }
 
 pub struct Tree<D> {

@@ -33,7 +33,7 @@ impl CollisionSystem {
   }
 
   pub fn register(&self, ) {
-
+    
   }
 }
 
