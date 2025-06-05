@@ -1,6 +1,7 @@
 mod utils;
 mod webgl;
 mod game_specs;
+mod game_bevy;
 mod geom;
 mod graphics;
 mod canvas;
@@ -8,8 +9,8 @@ mod console;
 mod bvh;
 
 use console::*;
-use game_specs::*;
-use glow::Context;
+use game_bevy::*;
+use glow::{Context, HasContext};
 use wasm_bindgen::prelude::*;
 use web_sys::{HtmlCanvasElement, WebGl2RenderingContext};
 use std::{cell::RefCell, rc::Rc};
@@ -25,7 +26,7 @@ pub fn greet() {
 #[cfg(target_arch = "wasm32")]
 #[wasm_bindgen]
 pub struct WebClient {
-  game: Rc<Game<'static>>
+  game: Rc<Game>
 }
 
 #[cfg(target_arch = "wasm32")]
@@ -36,6 +37,8 @@ impl WebClient {
   pub fn new(
     canvas: HtmlCanvasElement
   ) -> Result<WebClient, JsValue> {
+    use crate::game_bevy::scenes::scene1::create_scene1;
+
     utils::set_panic_hook();
 
 
@@ -45,8 +48,9 @@ impl WebClient {
     // let game = RefCell::new(Game::new(&gl));
 
     let game = Rc::new(Game::new(&canvas));
+    create_scene1(game.as_ref());
 
-    canvas::attach_events(&canvas, Rc::clone(&game))?;
+    // canvas::attach_events(&canvas, Rc::clone(&game))?;
 
     Ok(WebClient {
       game

@@ -12,9 +12,9 @@ use crate::console::*;
 use crate::game_specs::components;
 use crate::canvas;
 use crate::geom;
-use crate::state;
+use crate::game_specs::state;
 use crate::graphics::shader::Shader;
-use crate::state::EventQueue;
+use crate::game_specs::state::EventQueue;
 use super::event::Event;
 use super::systems::collisions::CollisionSystem;
 use super::systems::player_control::PlayerControlSystem;
@@ -48,8 +48,8 @@ pub struct Game<'a> {
   // game loop
   pub store   : Rc<RefCell<Store<'a>>>,
   // graphics
-  gl: Rc<Context>,
-  pub shader : Shader
+  // gl: Rc<Context>,
+  // pub shader : Shader
 }
 
 impl<'a> Game<'a> {
@@ -132,8 +132,8 @@ impl<'a> Game<'a> {
     
     let mut game = Game {
       store,
-      gl,
-      shader
+      // gl,
+      // shader
     };
 
     game.create_scene1();

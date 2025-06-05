@@ -1,6 +1,6 @@
 use specs::prelude::*;
-use crate::event::Event;
-use crate::state;
+use crate::game_specs::event::Event;
+use crate::game_specs::state;
 use crate::console::*;
 use crate::game_specs::controls::keyboard::Key;
 

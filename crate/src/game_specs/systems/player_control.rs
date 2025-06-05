@@ -1,6 +1,6 @@
 use specs::prelude::*;
 use crate::game_specs::components;
-use crate::state;
+use crate::game_specs::state;
 
 pub struct PlayerControlSystem;
 
