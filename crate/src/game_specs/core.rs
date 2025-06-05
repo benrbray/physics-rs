@@ -18,7 +18,6 @@ use crate::game_specs::state::EventQueue;
 use super::event::Event;
 use super::systems::collisions::CollisionSystem;
 use super::systems::player_control::PlayerControlSystem;
-use super::systems::time::Time;
 use super::systems::render::RenderSystem;
 use super::systems::physics::PhysicsSystem;
 use super::systems::event::EventSystem;
@@ -96,8 +95,6 @@ impl<'a> Game<'a> {
     update_dispatcher.setup(&mut world);
     render_dispatcher.setup(&mut world);
 
-    world.insert(Time(0.0));
-
     world.insert(state::GameState {
       key_left: false,
       key_right: false,
@@ -149,12 +146,6 @@ impl<'a> Store<'a> {
   pub fn update(&mut self) {
     self.process_commands();
     self.process_events();
-
-    {
-      // timekeeping
-      let mut sim_time = self.world.write_resource::<Time>();
-      *sim_time = Time(sim_time.0 + 1.0);
-    }
 
     self.update_dispatcher.dispatch(&self.world);
     self.world.maintain();
