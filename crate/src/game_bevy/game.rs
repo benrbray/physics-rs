@@ -4,7 +4,7 @@ use bevy_ecs::{prelude::*, schedule::ScheduleLabel};
 use glow::{Context, HasContext};
 use web_sys::HtmlCanvasElement;
 
-use crate::{canvas, game_bevy::systems::render_system::{render_system, RenderResource}};
+use crate::{canvas, game_bevy::systems::{physics_system, render_system::{render_system, RenderResource}}};
 
 /* -------------------------------------------- */
 
@@ -55,7 +55,8 @@ impl Game {
     world.insert_non_send_resource(RenderResource::build(gl));
 
     /* ---- update schedule ---- */
-    let update_schedule = Schedule::new(Update);
+    let mut update_schedule = Schedule::new(Update);
+    update_schedule.add_systems(physics_system);
 
     /* ---- render schedule ---- */
     let mut render_schedule = Schedule::new(Render);

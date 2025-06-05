@@ -1,9 +1,9 @@
-use crate::game_bevy::{components::{Position, Velocity}, game};
-use crate::game_bevy::components;
+use rand::prelude::*;
+
 use crate::geom;
 use crate::bvh::aabb::AABB;
-
-use rand::prelude::*;
+use crate::game_bevy::game;
+use crate::game_bevy::components;
 
 pub fn create_scene1(game: &game::Game) {
   let mut state = game.state.borrow_mut();
