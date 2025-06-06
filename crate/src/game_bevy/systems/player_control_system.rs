@@ -14,9 +14,9 @@ pub fn player_control_system(
     vel.x *= FRICTION;
     vel.y *= FRICTION;
     // apply control
-    if game_state.key_up    { vel.y = ACCEL;  vel.x = 0.0; }
-    if game_state.key_down  { vel.y = -ACCEL; vel.x = 0.0; }
-    if game_state.key_left  { vel.x = -ACCEL; vel.y = 0.0; }
-    if game_state.key_right { vel.x = ACCEL;  vel.y = 0.0; }
+    if game_state.key_up    { vel.y = ACCEL;  }
+    if game_state.key_down  { vel.y = -ACCEL; }
+    if game_state.key_left  { vel.x = -ACCEL; }
+    if game_state.key_right { vel.x = ACCEL;  }
   }
 }
