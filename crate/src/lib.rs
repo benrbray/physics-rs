@@ -6,6 +6,7 @@ mod geom;
 mod graphics;
 mod canvas;
 mod console;
+mod controls;
 mod bvh;
 
 use console::*;
@@ -43,14 +44,15 @@ impl WebClient {
 
 
     // webgl
-    // let ctx = canvas::create_webgl_context(canvas).unwrap();
-    // let gl = glow::Context::from_webgl2_context(ctx);
-    // let game = RefCell::new(Game::new(&gl));
+    canvas.set_width(600);
+    canvas.set_height(600);
+    let ctx = canvas::create_webgl_context(&canvas).unwrap();
+    let gl = glow::Context::from_webgl2_context(ctx);
 
-    let game = Rc::new(Game::new(&canvas));
+    let game = Rc::new(Game::new(Rc::new(gl)));
     create_scene1(game.as_ref());
 
-    // canvas::attach_events(&canvas, Rc::clone(&game))?;
+    canvas::attach_events(&canvas, Rc::clone(&game))?;
 
     Ok(WebClient {
       game

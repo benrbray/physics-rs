@@ -18,3 +18,6 @@ pub struct Collider {
 pub struct Geom2d {
   pub shape: geom::ConvexPoly
 }
+
+#[derive(Component)]
+pub struct Player;
