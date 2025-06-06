@@ -16,7 +16,6 @@ use crate::game_specs::state;
 use crate::graphics::shader::Shader;
 use crate::game_specs::state::EventQueue;
 use super::event::Event;
-use super::systems::collisions::CollisionSystem;
 use super::systems::player_control::PlayerControlSystem;
 use super::systems::render::RenderSystem;
 use super::systems::physics::PhysicsSystem;
@@ -65,8 +64,7 @@ impl<'a> Game<'a> {
     let mut update_dispatcher = update_builder
 	    .with(EventSystem::build(),         "event_system",     &[])
 	    .with(PlayerControlSystem::build(), "player_control",   &["event_system"])
-	    .with(CollisionSystem::build(),     "collision_system", &[])
-      .with_barrier()
+	    .with_barrier()
 	    .with(PhysicsSystem::build(), "physics", &["collision_system"])
       .build();
 
