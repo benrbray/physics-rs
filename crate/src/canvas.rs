@@ -3,34 +3,29 @@
 
 use std::rc::Rc;
 
-// use std::rc::Rc;
 use wasm_bindgen::prelude::*;
-// use wasm_bindgen::JsCast;
-// use wasm_bindgen::JsValue;
-// use web_sys::WebGl2RenderingContext as GL;
-use web_sys::*;
+use web_sys;
 
-use crate::Game;
-use crate::event::Event;
-use crate::game::controls::keyboard::Key;
-use crate::console::*;
+use crate::game_bevy::Game;
+use crate::game_bevy::events::{InputEvent, InputKind};
+use crate::controls::keyboard;
 
 ////////////////////////////////////////////////////////////////////////////////
 
 pub fn create_webgl_context(
-  canvas: &HtmlCanvasElement,
-) -> Result<WebGl2RenderingContext, JsValue> {
+  canvas: &web_sys::HtmlCanvasElement,
+) -> Result<web_sys::WebGl2RenderingContext, JsValue> {
   let gl = canvas
     .get_context("webgl2")?
     .unwrap()
-    .dyn_into::<WebGl2RenderingContext>()?;
+    .dyn_into::<web_sys::WebGl2RenderingContext>()?;
 
   Ok(gl)
 }
 
 pub fn attach_events(
-  canvas: &HtmlCanvasElement,
-  game: Rc<Game<'static>>
+  canvas: &web_sys::HtmlCanvasElement,
+  game: Rc<Game>
 ) -> Result<(), JsValue> {
   attach_mouse_down_handler(canvas, Rc::clone(&game))?;
   attach_key_down_handler(canvas, Rc::clone(&game))?;
@@ -40,14 +35,14 @@ pub fn attach_events(
 }
 
 fn attach_mouse_down_handler (
-  canvas: &HtmlCanvasElement,
-  game: Rc<Game<'static>>
+  canvas: &web_sys::HtmlCanvasElement,
+  game: Rc<Game>
 ) -> Result<(), JsValue> {
   let handler = move |event: web_sys::MouseEvent| {
     let x = event.client_x();
     let y = event.client_y();
     event.prevent_default();
-    game.send_event(Event::MouseDown(x, y))
+    game.send_event(InputEvent { kind: InputKind::MouseDown(x, y) });
   };
 
   let handler = Closure::<dyn FnMut(_)>::new(handler);
@@ -59,24 +54,13 @@ fn attach_mouse_down_handler (
   Ok(())
 }
 
-fn convert_key(key: String) -> Option<Key> {
-  match key.as_str() {
-    "ArrowLeft"  => { Some(Key::ArrowLeft)  }
-    "ArrowRight" => { Some(Key::ArrowRight) }
-    "ArrowUp"    => { Some(Key::ArrowUp)    }
-    "ArrowDown"  => { Some(Key::ArrowDown)  }
-    " "      => { Some(Key::Space)      }
-    _ => None
-  }
-}
-
 fn attach_key_down_handler (
-  canvas: &HtmlCanvasElement,
-  game: Rc<Game<'static>>
+  canvas: &web_sys::HtmlCanvasElement,
+  game: Rc<Game>
 ) -> Result<(), JsValue> {
   let handler = move |event: web_sys::KeyboardEvent| {
-    if let Some(key) = convert_key(event.key()) {
-      game.send_event(Event::KeyDown(key));
+    if let Some(key) = keyboard::convert_key(event.key()) {
+      game.send_event(InputEvent { kind: InputKind::KeyDown(key) });
       event.prevent_default();
     }
   };
@@ -91,12 +75,12 @@ fn attach_key_down_handler (
 }
 
 fn attach_key_up_handler (
-  canvas: &HtmlCanvasElement,
-  game: Rc<Game<'static>>
+  canvas: &web_sys::HtmlCanvasElement,
+  game: Rc<Game>
 ) -> Result<(), JsValue> {
   let handler = move |event: web_sys::KeyboardEvent| {
-    if let Some(key) = convert_key(event.key()) {
-      game.send_event(Event::KeyUp(key));
+    if let Some(key) = keyboard::convert_key(event.key()) {
+      game.send_event(InputEvent { kind: InputKind::KeyUp(key) });
       event.prevent_default();
     }
   };

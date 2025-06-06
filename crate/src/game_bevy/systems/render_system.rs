@@ -1,74 +1,48 @@
 use std::rc::Rc;
+use glow::{Context, HasContext};
+use bevy_ecs::prelude::*;
 
-use specs::prelude::*;
-use glow::HasContext;
-use crate::{game::components, graphics::batch_poly_renderer::BatchPolyRenderer};
+use crate::game_bevy::components;
+use crate::{graphics::{batch_poly_renderer::BatchPolyRenderer, shader::Shader}};
 
-////////////////////////////////////////////////////////////////////////////////
+/* ---------------------------------- */
 
-pub struct RenderSystem {
-  gl:  Rc<glow::Context>,
-  shape_renderer: BatchPolyRenderer,
-  aabb_renderer: BatchPolyRenderer
+// custom NonSend resource
+// https://bevy-cheatbook.github.io/programming/non-send.html#custom-non-send-resources
+
+pub struct RenderResource {
+  pub gl: Rc<Context>,
+  pub shape_renderer: BatchPolyRenderer,
+  pub aabb_renderer: BatchPolyRenderer
 }
 
-// resources required for execution
-#[derive(SystemData)]
-pub struct RenderSystemData<'a> {
-  geometry: ReadStorage<'a, components::Geom2d>,
-  collider: ReadStorage<'a, components::Collider>,
-  position: ReadStorage<'a, components::Position>
+// TODO where does this code belong?
+fn activate_shaders(gl: Rc<Context>) {
+    /* ---- compile shaders ---- */
+
+    let vert_src = include_str!("../../../shaders/basic/basic.vert");
+    let frag_src = include_str!("../../../shaders/basic/basic.frag");
+    let shader = Shader::build(&gl, vert_src, frag_src, &[]).unwrap();
+
+    shader.activate(&gl);
 }
 
-impl RenderSystem {
-  pub fn build(
-    gl: Rc<glow::Context>,
-  ) -> RenderSystem {
+impl RenderResource {
+  pub fn build(gl: Rc<Context>) -> RenderResource {
+    // batch renderers
     let shape_renderer = BatchPolyRenderer::build(Rc::clone(&gl));
     let aabb_renderer = BatchPolyRenderer::build(Rc::clone(&gl));
 
-    let system = RenderSystem {
+    activate_shaders(Rc::clone(&gl));
+
+    return RenderResource {
       gl,
       shape_renderer,
       aabb_renderer
-    };
-
-    system.render_init();
-
-    system
+    }
   }
-}
 
-impl<'b> System<'b> for RenderSystem {
-  type SystemData = RenderSystemData<'b>;
-
-  // plan:
-  // 1. batch all 2d convex shapes into single vbo, single draw call
-  //    (repopulate entire vbo per frame) 
-  // 2. re-populate entire vbo per-frame, double-buffered
-  //    to encourage GPU pipelining
-  //    https://web.archive.org/web/20200622011519/https://community.arm.com/developer/tools-software/graphics/b/blog/posts/mali-performance-6-efficiently-updating-dynamic-resources
-  // 3. use GL_PRIMITIVE_RESTART_FIXED_INDEX so that multiple triangle
-  //    strips can be drawn from a single vbo
-  //
-  // hints:
-
-  //   GL_DYNAMIC_DRAW?
-  //   glBufferSubData
-  //   buffer orphaning
-  //   https://www.khronos.org/opengl/wiki/Buffer_Object_Streaming
-  //   https://old.reddit.com/r/opengl/comments/1461fzc/vertex_buffer_streaming_techniques_comparision/
-
-  fn run(&mut self, data: RenderSystemData) {
-    self.render_begin();
-    self.render_shapes(&data);
-    self.render_aabb(&data);
-    self.render_end();
-  }
-}
-
-impl RenderSystem {
-  fn render_init(&self) {
+  pub fn _render_init(_gl: Rc<Context>) {
     // single draw call
     // https://registry.khronos.org/webgl/specs/latest/2.0/#5.18
     // self.gl.enable(glow::PRIMITIVE_RESTART_FIXED_INDEX);
@@ -77,7 +51,7 @@ impl RenderSystem {
     // try to enable it.  So, the enable should only be called in desktop builds.
   }
 
-  fn render_begin(&self) {
+  pub fn render_begin(&self) {
     unsafe {
       self.gl.clear(glow::COLOR_BUFFER_BIT);
     }
@@ -88,14 +62,14 @@ impl RenderSystem {
     // self.window.gl_swap_window();
   }
 
-  fn render_shapes(&self, data: &RenderSystemData) {
+  fn render_shapes(&self, data: &Query<RenderData>) {
     // TODO (Ben @ 2024/08/25) optimize by reusing these vectors?
     let mut vbo_data = Vec::<f32>::new();
     let mut ebo_data = Vec::<u32>::new();
 
     let mut max_vbo_idx: u32 = 0;
     let mut num_shapes = 0;
-    for (geom, pos) in (&data.geometry, &data.position).join() {
+    for (pos, geom, _) in data {
       for col in geom.shape.points.column_iter() {
         vbo_data.push(pos.pos.0 + col.x);
         vbo_data.push(pos.pos.1 + col.y);
@@ -111,14 +85,14 @@ impl RenderSystem {
     self.shape_renderer.render(vbo_data, ebo_data, num_shapes, max_vbo_idx, true, true);
   }
 
-  fn render_aabb(&self, data: &RenderSystemData) {
+  fn render_aabb(&self, data: &Query<RenderData>) {
     // TODO (Ben @ 2024/08/25) optimize by reusing these vectors?
     let mut vbo_data = Vec::<f32>::new();
     let mut ebo_data = Vec::<u32>::new();
 
     let mut max_vbo_idx: u32 = 0;
     let mut num_shapes = 0;
-    for (collider, pos) in (&data.collider, &data.position).join() {
+    for (pos, _, collider) in data {
       // bottom left
       vbo_data.push(pos.pos.0 + collider.volume.lower_bound.x);
       vbo_data.push(pos.pos.1 + collider.volume.lower_bound.y);
@@ -150,4 +124,23 @@ impl RenderSystem {
 
     self.aabb_renderer.render(vbo_data, ebo_data, num_shapes, max_vbo_idx, false, true);
   }
+}
+
+type RenderData<'a> = (
+  &'a components::Position,
+  &'a components::Geom2d,
+  &'a components::Collider
+);
+
+// renderer must always run on main thread
+// so we use bevy's NonSend
+// https://bevy-cheatbook.github.io/programming/non-send.html
+pub fn render_system(
+  data: Query<RenderData>,
+  renderer: NonSend<RenderResource>
+) {
+  renderer.render_begin();
+  renderer.render_shapes(&data);
+  renderer.render_aabb(&data);
+  renderer.render_end();
 }
