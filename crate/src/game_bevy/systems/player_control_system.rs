@@ -18,8 +18,5 @@ pub fn player_control_system(
     if game_state.key_down  { vel.y = -ACCEL; vel.x = 0.0; }
     if game_state.key_left  { vel.x = -ACCEL; vel.y = 0.0; }
     if game_state.key_right { vel.x = ACCEL;  vel.y = 0.0; }
-
-    // vel.x = clamp_vel(vel.x);
-    // vel.y = clamp_vel(vel.y);
   }
 }

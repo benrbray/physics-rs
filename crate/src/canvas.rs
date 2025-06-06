@@ -4,15 +4,11 @@
 use std::rc::Rc;
 
 use wasm_bindgen::prelude::*;
-// use wasm_bindgen::JsCast;
-// use wasm_bindgen::JsValue;
-// use web_sys::WebGl2RenderingContext as GL;
 use web_sys;
 
 use crate::game_bevy::Game;
 use crate::game_bevy::events::{InputEvent, InputKind};
 use crate::controls::keyboard;
-use crate::console::*;
 
 ////////////////////////////////////////////////////////////////////////////////
 

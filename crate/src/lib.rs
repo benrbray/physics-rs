@@ -1,6 +1,5 @@
 mod utils;
 mod webgl;
-mod game_specs;
 mod game_bevy;
 mod geom;
 mod graphics;
@@ -11,10 +10,9 @@ mod bvh;
 
 use console::*;
 use game_bevy::*;
-use glow::{Context, HasContext};
 use wasm_bindgen::prelude::*;
-use web_sys::{HtmlCanvasElement, WebGl2RenderingContext};
-use std::{cell::RefCell, rc::Rc};
+use web_sys;
+use std::rc::Rc;
 
 #[wasm_bindgen]
 pub fn greet() {
@@ -36,7 +34,7 @@ impl WebClient {
   /// Initialize the WebClient.
   #[wasm_bindgen(constructor)]
   pub fn new(
-    canvas: HtmlCanvasElement
+    canvas: web_sys::HtmlCanvasElement
   ) -> Result<WebClient, JsValue> {
     use crate::game_bevy::scenes::scene1::create_scene1;
 
